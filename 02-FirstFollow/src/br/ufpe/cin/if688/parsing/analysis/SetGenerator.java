@@ -18,35 +18,91 @@ public final class SetGenerator {
          */
 
         Collection<Production> regras = g.getProductions();//lista das regras
-
-        for(Production p : regras){//o for que percorre todas as regras
-            HashSet<GeneralSymbol> auxFirst = new HashSet<GeneralSymbol>();//auxiliar que vai juntar os símbolos do first
-            List<GeneralSymbol> regra = p.getProduction();//regra atual
-            ArrayList recursao = new ArrayList();
-            int indice = 1;//indice para recursao
-            GeneralSymbol primeiroS = regra.get(0);
-            Nonterminal nt = p.getNonterminal();
-            recursao.add(nt);//coloca o nterminal na pilha
-            recursao.add(primeiroS);//coloca o primeiro símbolo na pilha
-            //até aqui ok
-            //oi
-            while(!(recursao.isEmpty() && indice>=recursao.size())){//isso vai rodar enquanto a "pilha" estiver vazia ou o indice não passou do tamanho da pilha
-                if(primeiroS instanceof Nonterminal){//caso de ser nTerminal
-
-                }
-                else{//caso de ser EPISILON ou Terminal
-                    if(first.get(nt).isEmpty()){//caso o set do first do nTerminal esteja vazio, podemos adicionar diretamente
-
-                    }else{
-                        auxFirst.addAll(first.get(nt));//pega tudo que já tem la em first do nterminal
-
-                    }
-                    auxFirst.add(primeiroS);//adiciona o nterminal atual
-                    indice++;
-                }
-            }
-            first.put(nt,auxFirst);
+        ArrayList<Integer> indices = new ArrayList<Integer>();
+        boolean houveM = true;
+        int a =0;
+        for(Production p : regras){//inicializando a lista de indices
+            indices.add(0);
+            a++;
         }
+        while(houveM){
+            houveM = false;
+            int indiceR = 0;
+            for(Production p : regras){//o for que percorre todas as regras
+                HashSet<GeneralSymbol> auxFirst = new HashSet<GeneralSymbol>();//auxiliar que vai juntar os símbolos do first
+                HashSet<Nonterminal> temVazio = new HashSet<Nonterminal>();
+                List<GeneralSymbol> regra = p.getProduction();//regra atual
+
+                int indice = indices.get(indiceR);//indice atual
+                GeneralSymbol primeiroS = regra.get(indice);
+                Nonterminal nt = p.getNonterminal();
+                int tamanho = regra.size();
+                //até aqui ok
+                if(primeiroS instanceof Nonterminal ){//caso de ser nTerminal
+                    for(GeneralSymbol s : first.get(primeiroS)){
+                        if(!(s instanceof SpecialSymbol))
+                            auxFirst.add(s);
+                    }
+                    if(first.get(primeiroS).contains(SpecialSymbol.EPSILON)) {
+                        try {
+                            if (regra.get(indice + 1) == null) {
+                                indices.set(indiceR,indice+1);//ou seja o nTerminal pode ser vazio 
+                            }
+                        } catch (Exception e) {
+
+                            auxFirst.add(SpecialSymbol.EPSILON);
+                        }
+                    }
+                    if(!first.get(nt).containsAll(auxFirst)) {
+                        auxFirst.addAll(first.get(nt));
+                        houveM = true;
+                    }
+                }
+                else if(primeiroS instanceof Terminal){//caso de ser Terminal
+                    if(!first.get(nt).contains(primeiroS)) {
+                        auxFirst.addAll(first.get(nt));//pega tudo que já tem la em first do nterminal
+                        auxFirst.add(primeiroS);//adiciona o nterminal atual
+                        houveM = true;
+                    }
+                }
+                else if(primeiroS instanceof SpecialSymbol){//caso de ser EPISILOM
+                    boolean vazio = false;
+                    for(int i=0;i<tamanho && !vazio;i++){
+                        GeneralSymbol atual = regra.get(i);
+                        if(!(atual instanceof SpecialSymbol)) {
+                            vazio = true;
+                            if(atual instanceof Terminal){//caso por exemplo de B-> &b
+                                if(!first.get(nt).contains(atual)) {
+                                    auxFirst.addAll(first.get(nt));
+                                    auxFirst.add(atual);
+                                    houveM = true;
+                                }
+                            }else if(atual instanceof Nonterminal){//caso B->&
+                                if(!first.get(nt).containsAll(first.get(atual))) {
+                                    auxFirst.addAll(first.get(nt));
+                                    auxFirst.addAll(first.get(primeiroS));
+                                    houveM = true;
+                                }
+                            }
+                        }
+                    }
+                    if(!vazio && !first.get(nt).contains(SpecialSymbol.EPSILON)){//esse seria o caso de que só tem epsilom na regra.
+                        auxFirst.addAll(first.get(nt));
+                        auxFirst.add(primeiroS);//adicionando o símbolo vazio
+                        temVazio.add(nt);
+                        houveM = true;
+                    }
+                }else{
+                    System.out.println("regra inválida");
+                }
+                if(houveM)
+                    first.put(nt, auxFirst);
+                   // System.out.println("entrou")
+                //System.out.println("chegou aki");
+                indiceR++;
+            }
+        }
+        //aqui já colocamos todos os terminais e todos os simbolos epsilom no first, agora falta
         System.out.println(first);
 
         return first;
