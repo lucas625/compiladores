@@ -77,8 +77,8 @@ public class FirstSetTest extends TestCase {
 		/*
 		 * Gramatica de exemplo
 		 * S -> aABe
-		 * A -> K | a
-		 * K -> bcK | ε | abK
+		 * A -> bK
+		 * K -> bcK | ε
 		 * B -> d
 		 */
 
@@ -99,11 +99,9 @@ public class FirstSetTest extends TestCase {
 		prodS.add(B);
 		prodS.add(e);
 
-		List<GeneralSymbol> prodA = new ArrayList<GeneralSymbol>();//
+		List<GeneralSymbol> prodA = new ArrayList<GeneralSymbol>();
+		prodA.add(b);
 		prodA.add(K);
-
-		List<GeneralSymbol> prodA2 = new ArrayList<GeneralSymbol>();//
-		prodA2.add(a);
 
 		List<GeneralSymbol> prodK1 = new ArrayList<GeneralSymbol>();
 		prodK1.add(b);
@@ -113,29 +111,20 @@ public class FirstSetTest extends TestCase {
 		List<GeneralSymbol> prodK2 = new ArrayList<GeneralSymbol>();
 		prodK2.add(SpecialSymbol.EPSILON);
 
-		List<GeneralSymbol> prodK3 = new ArrayList<GeneralSymbol>();//
-		prodK3.add(a);
-		prodK3.add(b);
-		prodK3.add(K);
-
 		List<GeneralSymbol> prodB = new ArrayList<GeneralSymbol>();
 		prodB.add(d);
 
 		Production pS = new Production(S, prodS);
 		Production pA = new Production(A, prodA);
-		Production pA2 = new Production(A, prodA2);//
 		Production pK1 = new Production(K, prodK1);
 		Production pK2 = new Production(K, prodK2);
-		Production pK3 = new Production(K, prodK3);//
 		Production pB = new Production(B, prodB);
 
 		Collection<Production> collection = new ArrayList<Production>();
 		collection.add(pS);
 		collection.add(pA);
-		collection.add(pA2);//
 		collection.add(pK1);
 		collection.add(pK2);
-		collection.add(pK3);//
 		collection.add(pB);
 
 		Grammar g = new Grammar(collection, S);
@@ -149,14 +138,12 @@ public class FirstSetTest extends TestCase {
 
 		expected.get(K).add(SpecialSymbol.EPSILON);
 		expected.get(K).add(b);
-		expected.get(K).add(a);
 
 		expected.get(S).add(a);
 
 		expected.get(B).add(d);
 
 		expected.get(A).add(b);
-		expected.get(A).add(a);//
 
 		assertEquals(expected, first);
 	}

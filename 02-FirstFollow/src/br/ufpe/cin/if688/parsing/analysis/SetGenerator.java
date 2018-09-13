@@ -24,56 +24,76 @@ public final class SetGenerator {
             int indiceR = 0;
             for(Production p : regras) {//o for que percorre todas as regras
                 HashSet<GeneralSymbol> auxFirst = new HashSet<GeneralSymbol>();//auxiliar que vai juntar os símbolos do first
-
                 List<GeneralSymbol> regra = p.getProduction();//regra atual
-
-
-                    GeneralSymbol primeiroS = regra.get(0);
-                    Nonterminal nt = p.getNonterminal();
-                    int tamanho = regra.size();
-                    //até aqui ok
-                    if (primeiroS instanceof Nonterminal) {//caso de ser nTerminal
-                        int indice = 0;//indice atual
-                        boolean acabou = false;
-                        while(!acabou) {
-                            primeiroS = regra.get(indice);
-                            if(primeiroS instanceof Nonterminal) {
-                                for (GeneralSymbol s : first.get(primeiroS)) {//criando um arraylist com todos os elementos da regra
-                                    if (!(s instanceof SpecialSymbol))//vamos colocar apenas aqueles que não são &
-                                        auxFirst.add(s);
-                                }
-                                if (first.get(primeiroS).contains(SpecialSymbol.EPSILON)) {//estamos verificando se o nterminal possui & no first
-                                    try {
-                                        if (!regra.get(indice + 1).equals(null)) {//se n tiver mais nada na regra, então podemos colocar o &, caso do catch
-                                            //System.out.println("entrei no null" + regra + " " + indice);
-                                            indice++;
-                                            houveM = true;
-                                        }
-                                    } catch (Exception e) {
-                                        //System.out.println("entrei no catch: " + regra + " " + indice);
-                                        if (!first.get(nt).contains(SpecialSymbol.EPSILON)) {
-                                            auxFirst.add(SpecialSymbol.EPSILON);
-                                        }
-                                        acabou = true;
+                GeneralSymbol primeiroS = regra.get(0);
+                Nonterminal nt = p.getNonterminal();
+                int tamanho = regra.size();
+                if (primeiroS instanceof Nonterminal) {//caso de ser nTerminal
+                    int posicao = 0;
+                    boolean acabou = false;
+                    while(!acabou) {//recursao do caso nt
+                        acabou = true;
+                        primeiroS = regra.get(posicao);
+                        if(primeiroS instanceof Nonterminal) {
+                            if (first.get(primeiroS).contains(SpecialSymbol.EPSILON)) {//significaria que precisamos olhar coisas dps dele
+                                for (GeneralSymbol n : first.get(primeiroS)) {
+                                    if (!(n instanceof SpecialSymbol)) {
+                                        auxFirst.add(n);
                                     }
                                 }
-                                if (!first.get(nt).containsAll(auxFirst)) {
-                                    System.out.println("entrei no if do full: " + first.get(nt) + " " + auxFirst);
-                                    auxFirst.addAll(first.get(nt));
-                                    System.out.println(auxFirst);
-                                    houveM = true;
+                                try{
+                                    if((!regra.get(posicao+1).equals(null))){
+                                        acabou = false;
+                                    }else{
+                                        auxFirst.add(SpecialSymbol.EPSILON);
+                                        acabou = true;
+                                    }
+                                }catch(Exception e){
+                                    auxFirst.add(SpecialSymbol.EPSILON);
+                                    acabou = true;
                                 }
-                            }else if (primeiroS instanceof Terminal){
-                                
+
+
+                            } else {//se ele n contem EPISILON, podemos simplesmente adicionar
+                                auxFirst.addAll(first.get(primeiroS));
+                                acabou = true;
                             }
                         }
-                    } else if (primeiroS instanceof Terminal) {//caso de ser Terminal
-                        if (!first.get(nt).contains(primeiroS)) {
-                            auxFirst.addAll(first.get(nt));//pega tudo que já tem la em first do nterminal
-                            auxFirst.add(primeiroS);//adiciona o nterminal atual
-                            houveM = true;
+                        else if(primeiroS instanceof Terminal){
+                            acabou = true;
+                            auxFirst.add(primeiroS);
                         }
-                    } else if (primeiroS instanceof SpecialSymbol) {//caso de ser EPISILOM
+                        else if(primeiroS instanceof SpecialSymbol){
+                            try{
+                                if((!regra.get(posicao+1).equals(null))){
+                                    acabou = false;
+                                }else{
+                                    auxFirst.add(SpecialSymbol.EPSILON);
+                                    acabou = true;
+                                }
+                            }catch(Exception e){
+                                auxFirst.add(SpecialSymbol.EPSILON);
+                                acabou = true;
+                            }
+                        }else{
+                            acabou = true;
+                            System.out.println("erro no caso de um Nterminal mais a equerda");
+                        }
+                        posicao++;
+                    }
+                    if(!first.get(nt).containsAll(auxFirst)){
+                        auxFirst.addAll(first.get(nt));
+                        houveM = true;
+                    }
+                }
+                else if (primeiroS instanceof Terminal) {//caso de ser Terminal
+                    if (!first.get(nt).contains(primeiroS)) {
+                        auxFirst.addAll(first.get(nt));//pega tudo que já tem la em first do nterminal
+                        auxFirst.add(primeiroS);//adiciona o nterminal atual
+                        houveM = true;
+                    }
+                }
+                    else if (primeiroS instanceof SpecialSymbol) {//caso de ser EPISILOM
                         boolean vazio = false;
                         for (int j = 0; j < tamanho && !vazio; j++) {
                             GeneralSymbol atual = regra.get(j);
@@ -99,14 +119,12 @@ public final class SetGenerator {
                             auxFirst.add(primeiroS);//adicionando o símbolo vazio
                             houveM = true;
                         }
-                    } else {
+                    }
+                    else {
                         System.out.println("regra inválida");
                     }
-                    System.out.println("first do nt: " + first.get(nt));
                     if (houveM) {
-                        System.out.println("first do nt: "+nt+" " + first.get(nt));
                         first.put(nt, auxFirst);
-                        System.out.println("first do nt: "+nt+ " " + first.get(nt));
                     }
                     // System.out.println("entrou")
                     //System.out.println("chegou aki");
