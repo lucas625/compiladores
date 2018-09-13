@@ -18,51 +18,54 @@ public final class SetGenerator {
          */
 
         Collection<Production> regras = g.getProductions();//lista das regras
-        ArrayList<Integer> indices = new ArrayList<Integer>();
         boolean houveM = true;
-        int a =0;
-        for(Production p : regras){//inicializando a lista de indices
-            indices.add(0);
-            a++;
-        }
         while(houveM){
             houveM = false;
             int indiceR = 0;
             for(Production p : regras) {//o for que percorre todas as regras
                 HashSet<GeneralSymbol> auxFirst = new HashSet<GeneralSymbol>();//auxiliar que vai juntar os símbolos do first
-                HashSet<Nonterminal> temVazio = new HashSet<Nonterminal>();
+
                 List<GeneralSymbol> regra = p.getProduction();//regra atual
 
-                int indice = indices.get(indiceR);//indice atual
-                for (int i = 0; i <= indice; i++) {
-                    GeneralSymbol primeiroS = regra.get(i);
+
+                    GeneralSymbol primeiroS = regra.get(0);
                     Nonterminal nt = p.getNonterminal();
                     int tamanho = regra.size();
                     //até aqui ok
                     if (primeiroS instanceof Nonterminal) {//caso de ser nTerminal
-                        for (GeneralSymbol s : first.get(primeiroS)) {//criando um arraylist com todos os elementos da regra
-                            if (!(s instanceof SpecialSymbol))//vamos colocar apenas aqueles que não são &
-                                auxFirst.add(s);
-                        }
-                        if (first.get(primeiroS).contains(SpecialSymbol.EPSILON)) {//estamos verificando se o nterminal possui & no first
-                            try {
-                                if (!regra.get(indice + 1).equals(null)) {//se n tiver mais nada na regra, então podemos colocar o &, caso do catch
-                                    //System.out.println("entrei no null" + regra + " " + indice);
-                                    indices.set(indiceR, indice + 1);//ou seja o nTerminal pode ser vazio
+                        int indice = 0;//indice atual
+                        boolean acabou = false;
+                        while(!acabou) {
+                            primeiroS = regra.get(indice);
+                            if(primeiroS instanceof Nonterminal) {
+                                for (GeneralSymbol s : first.get(primeiroS)) {//criando um arraylist com todos os elementos da regra
+                                    if (!(s instanceof SpecialSymbol))//vamos colocar apenas aqueles que não são &
+                                        auxFirst.add(s);
+                                }
+                                if (first.get(primeiroS).contains(SpecialSymbol.EPSILON)) {//estamos verificando se o nterminal possui & no first
+                                    try {
+                                        if (!regra.get(indice + 1).equals(null)) {//se n tiver mais nada na regra, então podemos colocar o &, caso do catch
+                                            //System.out.println("entrei no null" + regra + " " + indice);
+                                            indice++;
+                                            houveM = true;
+                                        }
+                                    } catch (Exception e) {
+                                        //System.out.println("entrei no catch: " + regra + " " + indice);
+                                        if (!first.get(nt).contains(SpecialSymbol.EPSILON)) {
+                                            auxFirst.add(SpecialSymbol.EPSILON);
+                                        }
+                                        acabou = true;
+                                    }
+                                }
+                                if (!first.get(nt).containsAll(auxFirst)) {
+                                    System.out.println("entrei no if do full: " + first.get(nt) + " " + auxFirst);
+                                    auxFirst.addAll(first.get(nt));
+                                    System.out.println(auxFirst);
                                     houveM = true;
                                 }
-                            } catch (Exception e) {
-                                //System.out.println("entrei no catch: " + regra + " " + indice);
-                                if (!first.get(nt).contains(SpecialSymbol.EPSILON)) {
-                                    auxFirst.add(SpecialSymbol.EPSILON);
-                                }
+                            }else if (primeiroS instanceof Terminal){
+                                
                             }
-                        }
-                        if (!first.get(nt).containsAll(auxFirst)) {
-                            System.out.println("entrei no if do full: " + first.get(nt) + " "+ auxFirst);
-                            auxFirst.addAll(first.get(nt));
-                            System.out.println(auxFirst);
-                            houveM = true;
                         }
                     } else if (primeiroS instanceof Terminal) {//caso de ser Terminal
                         if (!first.get(nt).contains(primeiroS)) {
@@ -94,7 +97,6 @@ public final class SetGenerator {
                         if (!vazio && !first.get(nt).contains(SpecialSymbol.EPSILON)) {//esse seria o caso de que só tem epsilom na regra.
                             auxFirst.addAll(first.get(nt));
                             auxFirst.add(primeiroS);//adicionando o símbolo vazio
-                            temVazio.add(nt);
                             houveM = true;
                         }
                     } else {
@@ -108,8 +110,6 @@ public final class SetGenerator {
                     }
                     // System.out.println("entrou")
                     //System.out.println("chegou aki");
-
-                }
                 indiceR++;
             }
         }
