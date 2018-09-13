@@ -77,7 +77,7 @@ public class FirstSetTest extends TestCase {
 		/*
 		 * Gramatica de exemplo
 		 * S -> aABe
-		 * A -> bK | a
+		 * A -> K | a
 		 * K -> bcK | ε | abK
 		 * B -> d
 		 */
@@ -99,8 +99,7 @@ public class FirstSetTest extends TestCase {
 		prodS.add(B);
 		prodS.add(e);
 
-		List<GeneralSymbol> prodA = new ArrayList<GeneralSymbol>();
-		prodA.add(b);
+		List<GeneralSymbol> prodA = new ArrayList<GeneralSymbol>();//
 		prodA.add(K);
 
 		List<GeneralSymbol> prodA2 = new ArrayList<GeneralSymbol>();//
