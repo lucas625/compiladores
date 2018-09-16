@@ -149,6 +149,86 @@ public final class SetGenerator {
         /*
          * implemente aqui o método para retornar o conjunto follow
          */
+        Collection<Production> regras = g.getProductions();
+        follow.get(g.getStartSymbol()).add(SpecialSymbol.EOF);//adicionando o simbolo de $ ao follow do simbolo inicial
+        boolean houveM = true;
+        while(houveM){
+            houveM = false;
+            for(Production p : regras){
+                HashSet<GeneralSymbol> auxFollow = new HashSet<GeneralSymbol>();//auxiliar com os nt acumulados
+                List<GeneralSymbol> producao = p.getProduction();//simbolos a direita da regra
+                int indice = 0;
+                boolean acabou = false;
+                Nonterminal nt = p.getNonterminal();
+                GeneralSymbol firstS;
+                while(!acabou) {
+                    acabou = true;
+                    firstS = producao.get(indice);//primeiro simbolo encontrado
+                    if (firstS instanceof Terminal) {//colocamos o simbolo nos nt acumulados e os removemos de auxFollow.
+                        for(GeneralSymbol e : auxFollow){
+                            if(!follow.get(e).contains(firstS)) {
+                                follow.get(e).add(firstS);
+                                houveM = true;
+                            }
+                        }
+                        auxFollow = new HashSet<GeneralSymbol>();
+                    }
+                    else if (firstS instanceof SpecialSymbol) {//caso de encontrarmos um símbolo vazio.
+                        //aqui basta aumentar o indice, o que está sendo feito no final do while
+
+                    }
+                    else if (firstS instanceof Nonterminal) {
+                        HashSet<GeneralSymbol> holdFollow = new HashSet<GeneralSymbol>();
+                        boolean haEpi = false;//booleana para ver se tem episilon no first do firstS
+                        for(GeneralSymbol s : first.get(firstS)){
+                            if(!(s instanceof SpecialSymbol)){
+                                holdFollow.add(s);
+                            }else{
+                                haEpi = true;
+                            }
+                        }
+                        for(GeneralSymbol n : auxFollow){
+                            if(!follow.get(n).containsAll(holdFollow)){
+                                follow.get(n).addAll(holdFollow);
+                                houveM = true;
+                            }
+                        }
+                        if(!haEpi){//estamos removendo todos da lista de nt, pois eles não recebem o que vem dps
+                            auxFollow = new HashSet<GeneralSymbol>();
+                        }
+                        auxFollow.add(firstS);
+                    }
+                    else {
+                        System.out.println("Simbolo inválido encontrado");
+                    }
+                    indice++;
+                    try{
+                        if(!producao.get(indice).equals(null)){
+                            acabou = false;
+                            //no momento, todos que estão em auxFollow serão simbolos possíveis de serem os últimos da regra(mais a direita)
+                            //logo precisamos adicionar o follow de nt ao follow desses símbolos.
+
+                        }else{
+                            acabou = true;
+                            for(GeneralSymbol a : auxFollow){
+                                if(!follow.get(a).containsAll(follow.get(nt))){
+                                    houveM = true;
+                                    follow.get(a).addAll(follow.get(nt));
+                                }
+                            }
+                        }
+                    }catch(Exception e){
+                        acabou = true;
+                        for(GeneralSymbol a : auxFollow){
+                            if(!follow.get(a).containsAll(follow.get(nt))){
+                                houveM = true;
+                                follow.get(a).addAll(follow.get(nt));
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         return follow;
     }
