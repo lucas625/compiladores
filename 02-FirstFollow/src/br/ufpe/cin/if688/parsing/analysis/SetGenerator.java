@@ -133,7 +133,6 @@ public final class SetGenerator {
         }
         //aqui já colocamos todos os terminais e todos os simbolos epsilom no first, agora falta
         System.out.println(first);
-
         return first;
 
     }
@@ -229,7 +228,7 @@ public final class SetGenerator {
                 }
             }
         }
-
+        System.out.println(follow);
         return follow;
     }
 
