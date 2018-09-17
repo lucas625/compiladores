@@ -10,7 +10,6 @@ public final class Table {
     private Table() {    }
 
     public static Map<LL1Key, List<GeneralSymbol>> createTable(Grammar g) throws NotLL1Exception {
-        System.out.println(g);
         if (g == null) throw new NullPointerException();
 
         Map<Nonterminal, Set<GeneralSymbol>> first =
@@ -96,7 +95,10 @@ public final class Table {
         /*
          * Implemente aqui o método para retornar a parsing table
          */
-        System.out.println(parsingTable);
+        System.out.print(g);
+        System.out.println(first);
+        System.out.println(follow);
+        System.out.println(parsingTable.);
         return parsingTable;
     }
 }
