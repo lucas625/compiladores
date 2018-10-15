@@ -2,10 +2,9 @@ package br.ufpe.cin.if688.test;
 
 import br.ufpe.cin.if688.visitor.MaxArgsVisitor;
 import junit.framework.TestCase;
-import org.junit.Test;
 
 public class MaxArgsTest extends TestCase {
-	@Test
+
 	public void testG1() {
 		MaxArgsVisitor maxArgs = new MaxArgsVisitor();
 

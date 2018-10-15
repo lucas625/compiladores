@@ -12,88 +12,104 @@ import br.ufpe.cin.if688.ast.OpExp;
 import br.ufpe.cin.if688.ast.PairExpList;
 import br.ufpe.cin.if688.ast.PrintStm;
 import br.ufpe.cin.if688.ast.Stm;
+import br.ufpe.cin.if688.symboltable.IntAndTable;
 import br.ufpe.cin.if688.symboltable.Table;
 
 public class Interpreter implements IVisitor<Table> {
-	
+
 	//a=8;b=80;a=7;
 	// a->7 ==> b->80 ==> a->8 ==> NIL
 	private Table t;
-	
+
 	public Interpreter(Table t) {
 		this.t = t;
 	}
 
 	@Override
-	public Table visit(Stm s) {
-		return s.accept(this);
+	public Table visit(Stm s) {//stm padrão
+		s.accept(this);
+		return t;
 	}
 
 	@Override
-	public Table visit(AssignStm s) {
-		Exp a = s.getExp();
-		String b = s.getId();
-		return null;
+	public Table visit(AssignStm s) {//caso de a=...
+		String id = s.getId();
+		IntAndTableVisitor v = new IntAndTableVisitor(t);
+		IntAndTable aux = s.getExp().accept(v);
+		double valor = aux.result;
+		t = new Table(id,valor,aux.table);
+		return t;
 	}
 
 	@Override
-	public Table visit(CompoundStm s) {
-		// TODO Auto-generated method stub
-		return null;
+	public Table visit(CompoundStm s) {//dividindo os dois stm
+		Table aux1 = s.getStm1().accept(this);
+		Table aux2 = s.getStm2().accept(this);
+		return t;
 	}
 
 	@Override
 	public Table visit(PrintStm s) {
-		// TODO Auto-generated method stub
-		return null;
+		s.getExps().accept(this);
+		return t;
 	}
 
 	@Override
-	public Table visit(Exp e) {
-		// TODO Auto-generated method stub
-		return null;
+	public Table visit(Exp e) {//as exps precisamos lidar com IntAndTableVisitor
+		IntAndTableVisitor v = new IntAndTableVisitor(t);
+		t = e.accept(v).table;
+		return t;
 	}
 
 	@Override
 	public Table visit(EseqExp e) {
-		// TODO Auto-generated method stub
-		return null;
+		IntAndTableVisitor v = new IntAndTableVisitor(t);
+		t = e.accept(v).table;
+		return t;
 	}
 
 	@Override
 	public Table visit(IdExp e) {
-		// TODO Auto-generated method stub
-		return null;
+		IntAndTableVisitor v = new IntAndTableVisitor(t);
+		t = e.accept(v).table;
+		return t;
 	}
 
 	@Override
-	public Table visit(NumExp e) {
-		// TODO Auto-generated method stub
-		return null;
+	public Table visit(NumExp e) {//não precisamos passar pro int IntAndTable, pois não mudaria nada.
+		return t;
 	}
 
 	@Override
 	public Table visit(OpExp e) {
-		// TODO Auto-generated method stub
-		return null;
+		IntAndTableVisitor v = new IntAndTableVisitor(t);
+		t = e.accept(v).table;
+		return t;
 	}
 
 	@Override
-	public Table visit(ExpList el) {
-		// TODO Auto-generated method stub
-		return null;
+	public Table visit(ExpList el) {//precisaremos pegar a parte exp dos explist
+		el.accept(this);
+		return t;
 	}
 
 	@Override
 	public Table visit(PairExpList el) {
-		// TODO Auto-generated method stub
-		return null;
+		IntAndTableVisitor v = new IntAndTableVisitor(t);
+		IntAndTable aux = el.getHead().accept(v);
+		t = aux.table;
+		System.out.print(aux.result+"\n");
+		el.getTail().accept(this);
+		return t;
 	}
 
 	@Override
 	public Table visit(LastExpList el) {
-		// TODO Auto-generated method stub
-		return null;
+		IntAndTableVisitor v = new IntAndTableVisitor(t);
+		IntAndTable aux = el.getHead().accept(v);
+		t = aux.table;
+		System.out.print(aux.result+"\n");
+		return t;
 	}
 
 
